@@ -417,90 +417,92 @@
 #include &lt;ctime&gt;
 #include &lt;map&gt;
 #include &lt;vector&gt;
+
 using namespace std;
+
 
 const float REgrowth_THRESHOLD = 0.5;
 
 
-struct Environment
- {
-    float moisture;      
-    float temperature;   
+struct Environment {
+    float moisture;      // Percentage of moisture
+    float temperature;   // Temperature in Celsius
 };
 
 
 map&lt;int, int&gt; regrowthHistory; 
 
 
-void simulateRegrowth(int location, int timeSinceClearance) 
-{
-    srand(time(0)); 
-    float regrowthProbability = (timeSinceClearance / 10.0) * (rand() % 100 / 100.0);
+void simulateRegrowth(int location, int timeSinceClearance) {
+    float regrowthProbability = (timeSinceClearance / 10.0f) * (static_cast&lt;float&gt;(rand()) / RAND_MAX);
 
-    if (regrowthProbability &gt; REgrowth_THRESHOLD) 
-	{
+    if (regrowthProbability &gt; REgrowth_THRESHOLD) {
         cout &lt;&lt; "Regrowth detected at location " &lt;&lt; location &lt;&lt; ". Re-clearing required.\n";
         regrowthHistory[location]++; 
     }
 }
 
 
-void detectPotentialRegrowth(int location, Environment env)
- {
-    if (env.moisture &gt; 50.0 &amp;&amp; env.temperature &gt; 20.0) 
-	{ 
-        cout &lt;&lt; "Potential regrowth likely at location " &lt;&lt; location &lt;&lt; " due to moisture: "
-             &lt;&lt; env.moisture &lt;&lt; "% and temperature: " &lt;&lt; env.temperature &lt;&lt; "°C\n";
-        if (regrowthHistory.find(location) == regrowthHistory.end())
-		 {
-            regrowthHistory[location] = 0;
+void detectPotentialRegrowth(int location, Environment env) {
+    if (env.moisture &gt; 50.0f &amp;&amp; env.temperature &gt; 20.0f) { // Relaxed condition
+        cout &lt;&lt; "Potential regrowth likely at location " &lt;&lt; location
+             &lt;&lt; " due to moisture: " &lt;&lt; env.moisture
+             &lt;&lt; "% and temperature: " &lt;&lt; env.temperature &lt;&lt; "°C\n";
+
+       
+        if (regrowthHistory.find(location) == regrowthHistory.end()) {
+            regrowthHistory[location] = 0; 
         }
         regrowthHistory[location]++;
     }
 }
 
-void dynamicRegrowthCheck(int location)
- {
-    if (rand() % 100 &lt; 30) {
+
+void dynamicRegrowthCheck(int location) {
+    if (rand() % 100 &lt; 30) { // 30% chance of regrowth
         cout &lt;&lt; "Regrowth detected at location " &lt;&lt; location &lt;&lt; " during traversal.\n";
         regrowthHistory[location]++;
     }
 }
 
-void simulateWeedClearing(vector&lt;int&gt; route, int timeSinceClearance[], Environment env[])
- {
-    for (int i = 0; i &lt; route.size(); i++) 
-	{
+
+void simulateWeedClearing(vector&lt;int&gt; route, int timeSinceClearance[], Environment env[]) {
+    for (int i = 0; i &lt; route.size(); i++) {
         int location = route[i];
         cout &lt;&lt; "Clearing weeds at location " &lt;&lt; location &lt;&lt; endl;
+
+
         detectPotentialRegrowth(location, env[location]);
+
+       
         dynamicRegrowthCheck(location);
+
+        
         simulateRegrowth(location, timeSinceClearance[location]);
+
         cout &lt;&lt; endl;
     }
 }
 
-void displayRegrowthHistory()
- {
+
+void displayRegrowthHistory() {
     cout &lt;&lt; "Predicting future regrowth based on history:\n";
-    for (auto&amp; entry : regrowthHistory)
-	 {
-        if (entry.second &gt; 0)
-		 {
-            cout &lt;&lt; "Location " &lt;&lt; entry.first &lt;&lt; " is prone to regrowth. Prioritize it.\n";
+    for (map&lt;int, int&gt;::iterator it = regrowthHistory.begin(); it != regrowthHistory.end(); ++it) {
+        if (it-&gt;second &gt; 0) {
+            cout &lt;&lt; "Location " &lt;&lt; it-&gt;first &lt;&lt; " is prone to regrowth. Prioritize it.\n";
         }
     }
 }
 
-int main()
- {
+
+int main() {
+    srand(static_cast&lt;unsigned&gt;(time(0))); 
     int numLocations;
     cout &lt;&lt; "Enter the total number of locations: ";
     cin &gt;&gt; numLocations;
 
     cout &lt;&lt; "The available locations are: ";
-    for (int i = 0; i &lt; numLocations; i++) 
-	{
+    for (int i = 0; i &lt; numLocations; i++) {
         cout &lt;&lt; i &lt;&lt; " ";
     }
     cout &lt;&lt; endl;
@@ -511,21 +513,18 @@ int main()
 
     vector&lt;int&gt; weedClearingRoute(numToClear);
     cout &lt;&lt; "Enter the locations to clear weeds (e.g., 0 1 2 3): ";
-    for (int i = 0; i &lt; numToClear; i++) 
-	{
+    for (int i = 0; i &lt; numToClear; i++) {
         cin &gt;&gt; weedClearingRoute[i];
     }
 
     int timeSinceClearance[numLocations];
-    for (int i = 0; i &lt; numLocations; i++) 
-	{
+    for (int i = 0; i &lt; numLocations; i++) {
         cout &lt;&lt; "Enter time since last clearance for location " &lt;&lt; i &lt;&lt; ": ";
         cin &gt;&gt; timeSinceClearance[i];
     }
 
     Environment env[numLocations];
-    for (int i = 0; i &lt; numLocations; i++) 
-	{
+    for (int i = 0; i &lt; numLocations; i++) {
         cout &lt;&lt; "Enter moisture level (0-100) for location " &lt;&lt; i &lt;&lt; ": ";
         cin &gt;&gt; env[i].moisture;
         cout &lt;&lt; "Enter temperature (in Celsius) for location " &lt;&lt; i &lt;&lt; ": ";
@@ -533,13 +532,13 @@ int main()
     }
 
     cout &lt;&lt; "\nWeed clearing sequence: ";
-    for (int i = 0; i &lt; weedClearingRoute.size(); i++)
-	 {
+    for (int i = 0; i &lt; weedClearingRoute.size(); i++) {
         cout &lt;&lt; weedClearingRoute[i] &lt;&lt; " ";
     }
     cout &lt;&lt; endl;
 
     simulateWeedClearing(weedClearingRoute, timeSinceClearance, env);
+
     displayRegrowthHistory();
 
     return 0;
